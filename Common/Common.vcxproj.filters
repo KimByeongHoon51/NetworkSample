@@ -11,4 +11,10 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Calculate.fbs" />
+    <None Include="Result.fbs" />
+    <None Include="Controller.fbs" />
+    <None Include="Input.fbs" />
+  </ItemGroup>
 </Project>

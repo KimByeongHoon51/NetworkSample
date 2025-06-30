@@ -1,0 +1,7 @@
+namespace Input;
+
+table PlayerInput {
+  input: string;
+}
+
+root_type PlayerInput;

@@ -21,6 +21,12 @@
   <ItemGroup>
     <ClInclude Include="..\..\L20250624_Client\Packet.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Calculate.fbs" />
+    <None Include="Controller.fbs" />
+    <None Include="Input.fbs" />
+    <None Include="Result.fbs" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

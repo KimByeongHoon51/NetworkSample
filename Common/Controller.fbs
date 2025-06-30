@@ -1,0 +1,8 @@
+namespace Controller;
+
+table PlayerState {
+  x: int;
+  y: int;
+}
+
+root_type PlayerState;
