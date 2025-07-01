@@ -62,11 +62,11 @@ void RunGameLoop(SOCKET ServerSocket)
 	int x = 0, y = 0;
 	while (true)
 	{
-		key = _getch(); // <conio.h> 필요
+		key = _getch();
 
-		if (key == 'q' || key == 'Q') // 종료 키: q
+		// 'q', 'Q'일 때는 로그아웃 처리
+		if (tolower(key) == 'q') 
 		{
-			// 로그아웃 요청 전송
 			flatbuffers::FlatBufferBuilder builder;
 			auto logoutData = UserEvent::CreateC2S_Logout(builder, 1); // user id 예시
 			auto eventData = UserEvent::CreateEventData(builder, GetTimeStamp(), UserEvent::EventType_C2S_Logout, logoutData.Union());
@@ -75,22 +75,22 @@ void RunGameLoop(SOCKET ServerSocket)
 			break;
 		}
 
-		// 이동 좌표 변경
-		switch (key)
-		{
-		case 'w': case 'W': y--; break;
-		case 's': case 'S': y++; break;
-		case 'a': case 'A': x--; break;
-		case 'd': case 'D': x++; break;
-		}
-
-		// 좌표 이동 후 서버에 위치 전송
+		// 이동 키일 경우 서버로 전송
 		flatbuffers::FlatBufferBuilder builder;
-		auto movePacket = UserEvent::CreateC2S_PlayerMoveData(builder, 1, x, y, key);  // player_id = 1 예시
+		auto movePacket = UserEvent::CreateC2S_PlayerMoveData(builder, 1, 0, 0, key); // 좌표는 서버가 계산함
 		auto eventData = UserEvent::CreateEventData(builder, GetTimeStamp(), UserEvent::EventType_C2S_PlayerMoveData, movePacket.Union());
 		builder.Finish(eventData);
 		SendPacket(ServerSocket, builder);
 
+		// 이동 결과 수신
+		char RecvBuffer[10240] = { 0 };
+		RecvPacket(ServerSocket, RecvBuffer);
+		auto event = UserEvent::GetEventData(RecvBuffer);
+		if (event->data_type() == UserEvent::EventType_S2C_PlayerMoveData) {
+			auto pos = event->data_as_S2C_PlayerMoveData();
+			x = pos->position_x();
+			y = pos->position_y();
+		}
 
 		// 화면 클리어 및 * 출력
 		system("cls");

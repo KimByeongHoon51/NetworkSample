@@ -10,6 +10,10 @@
 
 #pragma comment(lib, "ws2_32")
 
+const int MAX_PLAYERS = 10;  // 최대 10명
+uint16_t playerX[MAX_PLAYERS] = { 0 };
+uint16_t playerY[MAX_PLAYERS] = { 0 };
+
 uint64_t GetTimeStamp()
 {
 	return (uint64_t)time(NULL);
@@ -121,13 +125,30 @@ int ProcessPacket(const char* RecvBuffer, SOCKET ClientSocket)
 	case UserEvent::EventType_C2S_PlayerMoveData:
 	{
 		auto moveData = RecvEventData->data_as_C2S_PlayerMoveData();
-		std::cout << "Player " << moveData->player_id()
-			<< " moved to (" << moveData->position_x()
-			<< ", " << moveData->position_y() << ")" << std::endl;
+		uint32_t id = moveData->player_id();
+		char key = moveData->key_code();
 
-		// 서버에서도 좌표 저장하거나 broadcast할 수 있음
+		uint16_t x = playerX[id];
+		uint16_t y = playerY[id];
+
+		switch (tolower(key)) {
+		case 'w': y--; break;
+		case 's': y++; break;
+		case 'a': x--; break;
+		case 'd': x++; break;
+		}
+
+		playerX[id] = x;
+		playerY[id] = y;
+
+		// 응답 전송
+		auto response = UserEvent::CreateS2C_PlayerMoveData(Builder, id, x, y);
+		auto eventData = UserEvent::CreateEventData(Builder, GetTimeStamp(), UserEvent::EventType_S2C_PlayerMoveData, response.Union());
+		Builder.Finish(eventData);
+		SendPacket(ClientSocket, Builder);
 	}
 	break;
+
 
 	case UserEvent::EventType_C2S_Logout:
 	{
